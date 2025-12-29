@@ -27,8 +27,8 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/yourusername/graphviz-static"
-Repository = "https://github.com/yourusername/graphviz-static"
+Homepage = "https://github.com/tbtn123/graphviz-static"
+Repository = "https://github.com/tbtn123/graphviz-static"
 
 [tool.setuptools]
 include-package-data = true
