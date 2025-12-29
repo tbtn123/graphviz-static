@@ -68,3 +68,6 @@ This gives you the path to the dot program for your computer.
 
 - Windows (32-bit and 64-bit)
 
+## Notes
+
+- You can use this along with official graphviz, you just need to put the `load_paths()` in the code in order to work.
