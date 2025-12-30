@@ -26,7 +26,7 @@ def load_paths():
 
     if os.path.exists(binary_path):
         os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
-        
+
         if os_sys == "Linux":
             os.environ["LD_LIBRARY_PATH"] = binary_path + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
             dot_file = os.path.join(binary_path, "dot")
@@ -49,7 +49,8 @@ def render_to_bytes(dot_content, file_type="png", dpi=300):
         temp_path = tf.name
 
     try:
-        command = ["dot", f"-T{file_type}", f"-Gdpi={dpi}", temp_path]
+        dot_cmd = "dot.exe" if platform.system() == "Windows" else "dot"
+        command = [dot_cmd, f"-T{file_type}", f"-Gdpi={dpi}", temp_path]
         result = subprocess.run(command, check=True, capture_output=True)
         return result.stdout
     finally:

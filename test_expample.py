@@ -2,9 +2,6 @@ from graphviz_static import *
 import os
 import subprocess
 
-load_paths()
-
-
 dot_content = """
 digraph G {
     node [shape=box, style=filled, color=lightblue];
@@ -17,4 +14,4 @@ with open("test_dot_file.dot", "w", encoding="utf-8") as f:
 
 print("Drawing, wait...")
 
-export_to_image("test_dot_file.dot", "png", "output")
+export_to_image(dot_content, "png", "output")
