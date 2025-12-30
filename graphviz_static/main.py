@@ -44,22 +44,51 @@ def get_dot_path():
     return shutil.which("dot")
 
 def render_to_bytes(dot_content, file_type="png", dpi=300):
-    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.dot', encoding='utf-8') as tf:
-        tf.write(dot_content)
-        temp_path = tf.name
-
+    temp_fd = None
+    temp_path = None
     try:
+        temp_fd, temp_path = tempfile.mkstemp(suffix='.dot', text=True)
+        with os.fdopen(temp_fd, 'w', encoding='utf-8') as tf:
+            tf.write(dot_content)
+            temp_fd = None
+
         dot_cmd = "dot.exe" if platform.system() == "Windows" else "dot"
         command = [dot_cmd, f"-T{file_type}", f"-Gdpi={dpi}", temp_path]
         result = subprocess.run(command, check=True, capture_output=True)
         return result.stdout
     finally:
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        if temp_fd is not None:
+            try:
+                os.close(temp_fd)
+            except OSError:
+                pass
+        if temp_path and os.path.exists(temp_path):
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
 
 def export_to_image(dot_content, file_type="png", file_name="output", dpi=300):
+    if os.path.isfile(str(dot_content)):
+        try:
+            with open(dot_content, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except IOError as e:
+            raise IOError(f"ERROR: Failed to read DOT file '{dot_content}': {e}")
+    elif isinstance(dot_content, str) and dot_content.strip():
+        content = dot_content
+    else:
+        raise ValueError("ERROR: dot_content must be a non-empty string or a valid file path")
+
+    data = render_to_bytes(content, file_type, dpi)
+    if not data:
+        raise RuntimeError("ERROR: Failed to generate image data from DOT content")
+
     output_file = f"{file_name}.{file_type}"
-    data = render_to_bytes(dot_content, file_type, dpi)
-    with open(output_file, "wb") as f:
-        f.write(data)
+    try:
+        with open(output_file, "wb") as f:
+            f.write(data)
+    except IOError as e:
+        raise IOError(f"ERROR: Failed to write output file '{output_file}': {e}")
+
     return os.path.abspath(output_file)
