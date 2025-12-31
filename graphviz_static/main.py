@@ -11,16 +11,13 @@ def load_paths():
     os_sys = platform.system()
     machine = platform.machine().lower()
 
+    # Xác định thư mục chứa binary
     if os_sys == "Windows":
         arch = "x64" if "64" in machine else "x86"
         folder_name = os.path.join("win", arch)
     elif os_sys == "Linux":
-        if "aarch64" in machine:
-            if os.path.exists(os.path.join(current_directory, "bin", "linux", "aarch64")):
-                folder_name = os.path.join("linux", "aarch64")
-            else:
-                folder_name = os.path.join("linux", "arm64")
-        elif "arm64" in machine:
+        
+        if "aarch64" in machine or "arm64" in machine:
             folder_name = os.path.join("linux", "arm64")
         else:
             folder_name = os.path.join("linux", "x64")
@@ -29,39 +26,50 @@ def load_paths():
 
     binary_path = os.path.join(current_directory, "bin", folder_name)
 
-    if os.path.exists(binary_path):
+    if os_sys == "Linux" and os.path.exists(binary_path):
+        bin_dir = os.path.join(binary_path, "bin")
+        lib_dir = os.path.join(binary_path, "lib")
 
-        if os_sys == "Linux":
-            bin_path = os.path.join(binary_path, "bin")
-            lib_path = os.path.join(binary_path, "lib")
-
-            if os.path.exists(bin_path):
-                os.environ["PATH"] = bin_path + os.pathsep + os.environ.get("PATH", "")
-
-            if os.path.exists(lib_path):
-                os.environ["LD_LIBRARY_PATH"] = lib_path + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
-
-                plugin_path = os.path.join(lib_path, "graphviz")
-                if os.path.exists(plugin_path):
-                    os.environ["GV_PLUGIN_PATH"] = plugin_path
-
-                for filename in os.listdir(bin_path):
-                    filepath = os.path.join(bin_path, filename)
-                    if os.path.isfile(filepath) and not filename.endswith('.dll'):
-                        try:
-                            os.chmod(filepath, 0o755)
-                        except OSError:
-                            pass
-        else:
-            os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
+     
+        if os.path.exists(bin_dir):
+            for file in os.listdir(bin_dir):
+                f_path = os.path.join(bin_dir, file)
+                if os.path.isfile(f_path):
+                    st = os.stat(f_path)
+                    os.chmod(f_path, st.st_mode | stat.S_IEXEC)
 
        
+            os.environ["LD_LIBRARY_PATH"] = lib_dir + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
+
+           
+            plugin_path = os.path.join(lib_dir, "graphviz")
+            if os.path.exists(plugin_path):
+                os.environ["GV_LIB_PATH"] = plugin_path
+
+     
         try:
-            dot_cmd = "dot.exe" if os_sys == "Windows" else "dot"
-            subprocess.run([dot_cmd, "-c"], check=True, capture_output=True)
-        except:
+            dot_exe = os.path.join(bin_dir, "dot")
+            subprocess.run([dot_exe, "-c"], check=True, capture_output=True)
+        except Exception:
             pass
-        
+
+def ensure_installed():
+   
+    dot_path = shutil.which("dot")
+    if dot_path:
+        return dot_path
+
+    if platform.system() == "Linux":
+        print("cant find the bin, installing by terminal")
+        try:
+           
+            subprocess.run(["sudo", "apt-get", "update"], check=True)
+            subprocess.run(["sudo", "apt-get", "install", "-y", "graphviz"], check=True)
+            return shutil.which("dot")
+        except Exception as e:
+            print(f"ERROR: {e}. maybe try manualy install 'sudo apt install graphviz' ")
+    return None
+
 def get_dot_path():
     return shutil.which("dot")
 
