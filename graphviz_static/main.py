@@ -15,7 +15,12 @@ def load_paths():
         arch = "x64" if "64" in machine else "x86"
         folder_name = os.path.join("win", arch)
     elif os_sys == "Linux":
-        if "aarch64" in machine or "arm64" in machine:
+        if "aarch64" in machine:
+            if os.path.exists(os.path.join(current_directory, "bin", "linux", "aarch64")):
+                folder_name = os.path.join("linux", "aarch64")
+            else:
+                folder_name = os.path.join("linux", "arm64")
+        elif "arm64" in machine:
             folder_name = os.path.join("linux", "arm64")
         else:
             folder_name = os.path.join("linux", "x64")
@@ -26,22 +31,26 @@ def load_paths():
 
     if os.path.exists(binary_path):
 
-        os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
-
         if os_sys == "Linux":
-           
-            os.environ["LD_LIBRARY_PATH"] = binary_path + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
-            
-      
-            plugin_path = os.path.join(binary_path, "graphviz")
-            if os.path.exists(plugin_path):
-                os.environ["GV_GRAPHVIZ_PATH"] = plugin_path
+            bin_path = os.path.join(binary_path, "bin")
+            lib_path = os.path.join(binary_path, "lib")
 
-          
-            dot_file = os.path.join(binary_path, "dot")
-            if os.path.exists(dot_file):
-                st = os.stat(dot_file)
-                os.chmod(dot_file, st.st_mode | stat.S_IEXEC)
+            if os.path.exists(bin_path):
+                os.environ["PATH"] = bin_path + os.pathsep + os.environ.get("PATH", "")
+
+            if os.path.exists(lib_path):
+                os.environ["LD_LIBRARY_PATH"] = lib_path + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
+
+                plugin_path = os.path.join(lib_path, "graphviz")
+                if os.path.exists(plugin_path):
+                    os.environ["GV_LIB_PATH"] = plugin_path
+
+                dot_file = os.path.join(bin_path, "dot")
+                if os.path.exists(dot_file):
+                    st = os.stat(dot_file)
+                    os.chmod(dot_file, st.st_mode | stat.S_IEXEC)
+        else:
+            os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
 
        
         try:
