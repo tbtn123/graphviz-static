@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "graphviz-static"
-version = "0.2.3"
+version = "0.2.4"
 description = "A Graphviz static wrapper for Python"
 readme = "README.md"
 license = {text = "MIT"}

@@ -43,12 +43,15 @@ def load_paths():
 
                 plugin_path = os.path.join(lib_path, "graphviz")
                 if os.path.exists(plugin_path):
-                    os.environ["GV_LIB_PATH"] = plugin_path
+                    os.environ["GV_PLUGIN_PATH"] = plugin_path
 
-                dot_file = os.path.join(bin_path, "dot")
-                if os.path.exists(dot_file):
-                    st = os.stat(dot_file)
-                    os.chmod(dot_file, st.st_mode | stat.S_IEXEC)
+                for filename in os.listdir(bin_path):
+                    filepath = os.path.join(bin_path, filename)
+                    if os.path.isfile(filepath) and not filename.endswith('.dll'):
+                        try:
+                            os.chmod(filepath, 0o755)
+                        except OSError:
+                            pass
         else:
             os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
 
