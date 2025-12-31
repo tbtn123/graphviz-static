@@ -67,6 +67,7 @@ This gives you the path to the dot program for your computer.
 ## Supported Platforms
 
 - Windows (32-bit and 64-bit)
+- Linux (ARM64)
 
 ## Notes
 
