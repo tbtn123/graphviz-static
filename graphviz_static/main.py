@@ -25,21 +25,31 @@ def load_paths():
     binary_path = os.path.join(current_directory, "bin", folder_name)
 
     if os.path.exists(binary_path):
+
         os.environ["PATH"] = binary_path + os.pathsep + os.environ.get("PATH", "")
 
         if os_sys == "Linux":
+           
             os.environ["LD_LIBRARY_PATH"] = binary_path + os.pathsep + os.environ.get("LD_LIBRARY_PATH", "")
+            
+      
+            plugin_path = os.path.join(binary_path, "graphviz")
+            if os.path.exists(plugin_path):
+                os.environ["GV_GRAPHVIZ_PATH"] = plugin_path
+
+          
             dot_file = os.path.join(binary_path, "dot")
             if os.path.exists(dot_file):
                 st = os.stat(dot_file)
                 os.chmod(dot_file, st.st_mode | stat.S_IEXEC)
 
+       
         try:
             dot_cmd = "dot.exe" if os_sys == "Windows" else "dot"
             subprocess.run([dot_cmd, "-c"], check=True, capture_output=True)
         except:
             pass
-
+        
 def get_dot_path():
     return shutil.which("dot")
 
